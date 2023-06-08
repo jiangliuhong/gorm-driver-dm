@@ -97,7 +97,8 @@ func ExplainSQL(sql string, numericPlaceholder *regexp.Regexp, escaper string, a
 			vars[idx] = fmt.Sprintf("%.6f", v)
 		case string:
 			//vars[idx] = escaper + strings.ReplaceAll(v, escaper, "\\"+escaper) + escaper
-			vars[idx] = escaper + v + escaper
+			//vars[idx] = escaper + v + escaper
+			vars[idx] = escaper + strings.ReplaceAll(v, escaper, "'"+escaper) + escaper
 		default:
 			rv := reflect.ValueOf(v)
 			if v == nil || !rv.IsValid() || rv.Kind() == reflect.Ptr && rv.IsNil() {
@@ -156,4 +157,8 @@ func ExplainSQL(sql string, numericPlaceholder *regexp.Regexp, escaper string, a
 	}
 
 	return sql
+}
+
+func ReplacementQuote(value string) {
+
 }
