@@ -1,7 +1,10 @@
 package dm
 
 import (
+	"database/sql/driver"
+	"encoding/json"
 	"fmt"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr"
 	dmSchema "github.com/jiangliuhong/gorm-driver-dm/schema"
 	"gorm.io/gorm"
 	"testing"
@@ -33,6 +36,7 @@ type User struct {
 	Age      int
 	Content  dmSchema.Clob `gorm:"size:1024000"`
 	Birthday time.Time
+	From     string `gorm:"size:16"`
 }
 
 type PerPel struct {
@@ -140,4 +144,65 @@ func TestClausesAssignmentColumns(t *testing.T) {
 		fmt.Printf("Error: failed to ClausesAssignmentColumns: %v\n", err)
 		return
 	}
+}
+
+type Migration struct {
+	ID string `gorm:"primary_key;column:id"`
+}
+
+func TestQuery(t *testing.T) {
+	var migrationId Migration
+	tx := conn.Table("t_db_migrations").Last(&migrationId)
+	if tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+	t.Log(migrationId.ID)
+}
+
+type JSON json.RawMessage
+
+func (v JSON) Value() (driver.Value, error) {
+	return []byte(v), nil
+}
+
+func (v *JSON) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+	switch vt := value.(type) {
+	case *dmr.DmClob:
+		var c dmSchema.Clob
+		err := c.Scan(value)
+		if err != nil {
+			return err
+		}
+		*v = []byte(c)
+		return nil
+	case []byte:
+		bs := value.([]byte)
+		*v = bs
+		return nil
+	default:
+		return fmt.Errorf("invalid type %T, value: %v", vt, value)
+	}
+}
+
+type TestConfig struct {
+	Id      uint   `gorm:"primarykey"`
+	Name    string `gorm:"not null;uniqueIndex:idx_cfg_name"`
+	Version int64  `gorm:"not null;default:0"`
+	Value   JSON   `gorm:"type:clob;"`
+}
+
+func (TestConfig) TableName() string {
+	return "t_config"
+}
+
+func TestQuery2(t *testing.T) {
+	rs := &TestConfig{}
+	tx := db.Where("name = ?", "task-manager-lock").Find(&rs)
+	if tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+	t.Log(rs)
 }

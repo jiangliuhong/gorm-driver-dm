@@ -1,6 +1,7 @@
 package dm
 
 import (
+	"fmt"
 	"gorm.io/gorm/schema"
 	"strings"
 )
@@ -10,7 +11,12 @@ type Namer struct {
 }
 
 func ConvertNameToFormat(x string) string {
-	return strings.ToUpper(x)
+	name := strings.ToUpper(x)
+	// 对关键字进行处理
+	if IsReservedWord(name) {
+		name = fmt.Sprintf(`"%s"`, name)
+	}
+	return name
 }
 
 func (n Namer) TableName(table string) (name string) {
