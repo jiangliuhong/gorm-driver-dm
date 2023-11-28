@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Leefs/gorm-driver-dm/dmr/util"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 )
 
 var rwMap = make(map[string]*rwCounter)

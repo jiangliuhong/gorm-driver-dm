@@ -6,11 +6,11 @@
 
 ```go
 import (
-  "github.com/Leefs/gorm-driver-dm"
+  "github.com/jiangliuhong/gorm-driver-dm"
   "gorm.io/gorm"
 )
 
-// https://github.com/Leefs/gorm-driver-dm
+// https://github.com/jiangliuhong/gorm-driver-dm
 dsn := "dm://SYSDBA:SYSDBA@127.0.0.1:5236?autoCommit=true"
 db, err := gorm.Open(dm.Open(dsn), &gorm.Config{})
 ```

@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/Leefs/gorm-driver-dm/dmr/i18n"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/i18n"
 )
 
 // 驱动级错误

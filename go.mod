@@ -1,4 +1,4 @@
-module github.com/Leefs/gorm-driver-dm
+module github.com/jiangliuhong/gorm-driver-dm
 
 go 1.17
 
@@ -7,7 +7,7 @@ require (
 	github.com/golang/snappy v0.0.1
 	github.com/thoas/go-funk v0.9.1
 	golang.org/x/text v0.3.2
-	gorm.io/gorm v1.24.0
+	gorm.io/gorm v1.23.5
 )
 
 require (

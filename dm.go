@@ -3,13 +3,13 @@ package dm
 import (
 	"database/sql"
 	"fmt"
-	"github.com/Leefs/gorm-driver-dm/clauses"
+	"github.com/jiangliuhong/gorm-driver-dm/clauses"
 	"gorm.io/gorm/utils"
 	"regexp"
 	"strconv"
 	"strings"
 
-	_ "github.com/Leefs/gorm-driver-dm/dmr"
+	_ "github.com/jiangliuhong/gorm-driver-dm/dmr"
 	"github.com/thoas/go-funk"
 	"gorm.io/gorm"
 	"gorm.io/gorm/callbacks"
@@ -170,9 +170,9 @@ func (d Dialector) RewriteLimit(c clause.Clause, builder clause.Builder) {
 			builder.WriteString(strconv.Itoa(offset))
 			builder.WriteString(" ROWS")
 		}
-		if limit := limit.Limit; *limit > 0 {
+		if limit := limit.Limit; limit > 0 {
 			builder.WriteString(" FETCH NEXT ")
-			builder.WriteString(strconv.Itoa(*limit))
+			builder.WriteString(strconv.Itoa(limit))
 			builder.WriteString(" ROWS ONLY")
 		}
 	}

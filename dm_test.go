@@ -2,7 +2,7 @@ package dm
 
 import (
 	"fmt"
-	dmSchema "github.com/Leefs/gorm-driver-dm/schema"
+	dmSchema "github.com/jiangliuhong/gorm-driver-dm/schema"
 	"gorm.io/gorm"
 	"testing"
 	"time"
@@ -13,7 +13,7 @@ var db *gorm.DB
 func init() {
 	var err error
 	//dsn := "dm://sysdba:SYSDBA@local.Leefs.ren:5236?autoCommit=true"
-	dsn := "dm://sysdba:SYSDBA@192.168.0.105:5236?autoCommit=true"
+	dsn := "dm://IACSTORE:IACSTORE@114.55.86.238:5236?schema=IACSTORE&autoCommit=true"
 	db, err = gorm.Open(Open(dsn), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})

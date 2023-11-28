@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Leefs/gorm-driver-dm/dmr/util"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 )
 
 var DB2G db2g
