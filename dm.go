@@ -285,14 +285,17 @@ func (d Dialector) DataTypeOf(field *schema.Field) string {
 		notNull := ""
 		unique, _ := field.TagSettings["UNIQUE"]
 		additionalType := fmt.Sprintf("%s %s", notNull, unique)
-		if value, ok := field.TagSettings["DEFAULT"]; ok {
-			additionalType = fmt.Sprintf("%s %s %s%s", "DEFAULT", value, additionalType, func() string {
-				if value, ok := field.TagSettings["COMMENT"]; ok {
-					return " COMMENT " + value
-				}
-				return ""
-			}())
-		}
+		//if value, ok := field.TagSettings["DEFAULT"]; ok {
+		//	additionalType = fmt.Sprintf("%s %s %s%s", "DEFAULT", value, additionalType, func() string {
+		//		if value, ok := field.TagSettings["COMMENT"]; ok {
+		//			return " COMMENT " + value
+		//		}
+		//		return ""
+		//	}())
+		//}
+		//if value, ok := field.TagSettings["COMMENT"]; ok {
+		//	additionalType = additionalType + " COMMENT " + value
+		//}
 		sqlType = fmt.Sprintf("%v %v", sqlType, additionalType)
 	}
 

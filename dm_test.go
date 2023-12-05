@@ -37,6 +37,7 @@ type User struct {
 	Content  dmSchema.Clob `gorm:"size:1024000"`
 	Birthday time.Time
 	From     string `gorm:"size:16"`
+	IsDemo   bool   `gorm:"size:16;comment:'创建人';gorm:"default:false""`
 }
 
 type PerPel struct {
@@ -48,6 +49,25 @@ type PerPel struct {
 	Birthday time.Time
 }
 
+func TestAutoCreat(t *testing.T) {
+	var err error
+
+	if Table().HasTable(&User{}) {
+		err := Table().DropTable(&User{})
+
+		if err != nil {
+			fmt.Printf("Error: failed to DropTable: %v\n", err)
+			return
+		}
+	}
+
+	err = Table().AutoMigrate(&User{})
+
+	if err != nil {
+		fmt.Printf("Error: failed to AutoMigrate: %v\n", err)
+		return
+	}
+}
 func TestAutoMigrate(t *testing.T) {
 	var err error
 

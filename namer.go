@@ -20,7 +20,13 @@ func ConvertNameToFormat(x string) string {
 }
 
 func (n Namer) TableName(table string) (name string) {
-	return ConvertNameToFormat(n.NamingStrategy.TableName(table))
+	//return ConvertNameToFormat(n.NamingStrategy.TableName(table))
+	var tn string
+	if n.NamingStrategy.SingularTable {
+		tn = n.NamingStrategy.TablePrefix + n.NamingStrategy.ColumnName("", table)
+	}
+	tn = n.NamingStrategy.TablePrefix + n.NamingStrategy.ColumnName("", table)
+	return ConvertNameToFormat(tn)
 }
 
 func (n Namer) ColumnName(table, column string) (name string) {
