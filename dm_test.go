@@ -16,7 +16,7 @@ var db *gorm.DB
 func init() {
 	var err error
 	//dsn := "dm://sysdba:SYSDBA@local.Leefs.ren:5236?autoCommit=true"
-	dsn := "dm://IACSTORE:IACSTORE@114.55.86.238:5236?schema=IACSTORE&autoCommit=true"
+	dsn := "dm://SYSDBA:SYSDBA@47.97.125.198:5236?schema=IACTEST&autoCommit=true"
 	db, err = gorm.Open(Open(dsn), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
@@ -31,6 +31,7 @@ func init() {
 
 type User struct {
 	gorm.Model
+	Index    string `json:"index" gorm:"not null;default:''"`
 	Key      string `gorm:"index:key,unique"`
 	Name     string `gorm:"index:name"`
 	Age      int
@@ -40,6 +41,10 @@ type User struct {
 	IsDemo   bool   `gorm:"size:16;comment:'创建人';gorm:"default:false""`
 }
 
+func (User) TableName() string {
+	return "t_user"
+}
+
 type PerPel struct {
 	gorm.Model
 	Key      string `gorm:"index:key,unique"`
@@ -47,6 +52,10 @@ type PerPel struct {
 	Age      int
 	Content  dmSchema.Clob `gorm:"size:1024000"`
 	Birthday time.Time
+}
+
+func TestAutoMirgte(t *testing.T) {
+	Table().AutoMigrate(&User{})
 }
 
 func TestAutoCreat(t *testing.T) {

@@ -1,8 +1,10 @@
 package dm
 
 import (
+	"database/sql"
 	"fmt"
 	"gorm.io/gorm/schema"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -22,6 +24,51 @@ type BuildIndexOptionsInterface interface {
 func (m Migrator) CurrentDatabase() (name string) {
 	m.DB.Raw("SELECT SYS_CONTEXT ('userenv', 'current_schema') FROM DUAL").Row().Scan(&name)
 	return
+}
+
+type ColumnType struct {
+	mct migrator.ColumnType
+}
+
+func (c ColumnType) Name() string {
+	name := c.mct.Name()
+	if IsReservedWord(name) {
+		return fmt.Sprintf(`"%s"`, name)
+	}
+	return name
+}
+func (c ColumnType) DatabaseTypeName() string {
+	return c.mct.DatabaseTypeName()
+}
+func (c ColumnType) ColumnType() (columnType string, ok bool) {
+	return c.mct.ColumnType()
+}
+func (c ColumnType) PrimaryKey() (isPrimaryKey bool, ok bool) {
+	return c.mct.PrimaryKey()
+}
+func (c ColumnType) AutoIncrement() (isAutoIncrement bool, ok bool) {
+	return c.mct.AutoIncrement()
+}
+func (c ColumnType) Length() (length int64, ok bool) {
+	return c.mct.Length()
+}
+func (c ColumnType) DecimalSize() (precision int64, scale int64, ok bool) {
+	return c.mct.DecimalSize()
+}
+func (c ColumnType) Nullable() (nullable bool, ok bool) {
+	return c.mct.Nullable()
+}
+func (c ColumnType) Unique() (unique bool, ok bool) {
+	return c.mct.Unique()
+}
+func (c ColumnType) ScanType() reflect.Type {
+	return c.mct.ScanType()
+}
+func (c ColumnType) Comment() (value string, ok bool) {
+	return c.mct.Comment()
+}
+func (c ColumnType) DefaultValue() (value string, ok bool) {
+	return c.mct.DefaultValue()
 }
 
 func buildConstraint(constraint *schema.Constraint) (sql string, results []interface{}) {
@@ -194,9 +241,9 @@ func (m Migrator) DropTable(values ...interface{}) error {
 
 func (m Migrator) HasTable(value interface{}) bool {
 	var count int64
-
+	schema := m.CurrentDatabase()
 	m.RunWithValue(value, func(stmt *gorm.Statement) error {
-		return m.DB.Raw("SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = ?", stmt.Table).Row().Scan(&count)
+		return m.DB.Raw("SELECT COUNT(*) FROM ALL_TABLES WHERE TABLE_NAME = ? and OWNER = ?", stmt.Table, schema).Row().Scan(&count)
 	})
 
 	return count > 0
@@ -286,8 +333,42 @@ func (m Migrator) AlterColumn(value interface{}, field string) error {
 func (m Migrator) HasColumn(value interface{}, field string) bool {
 	var count int64
 	return m.RunWithValue(value, func(stmt *gorm.Statement) error {
-		return m.DB.Raw("SELECT COUNT(*) FROM USER_TAB_COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ?", stmt.Table, field).Row().Scan(&count)
+		schema := m.CurrentDatabase()
+		return m.DB.Raw("SELECT COUNT(*) FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ? AND OWNER = ?", stmt.Table, field, schema).Row().Scan(&count)
 	}) == nil && count > 0
+}
+
+func (m Migrator) ColumnTypes(value interface{}) ([]gorm.ColumnType, error) {
+	columnTypes := make([]gorm.ColumnType, 0)
+	execErr := m.RunWithValue(value, func(stmt *gorm.Statement) (err error) {
+		rows, err := m.DB.Session(&gorm.Session{}).Table(stmt.Table).Limit(1).Rows()
+		if err != nil {
+			return err
+		}
+
+		defer func() {
+			err = rows.Close()
+		}()
+
+		var rawColumnTypes []*sql.ColumnType
+		rawColumnTypes, err = rows.ColumnTypes()
+		if err != nil {
+			return err
+		}
+
+		for _, c := range rawColumnTypes {
+			ct := ColumnType{
+				mct: migrator.ColumnType{
+					SQLColumnType: c,
+				},
+			}
+			columnTypes = append(columnTypes, ct)
+		}
+
+		return
+	})
+
+	return columnTypes, execErr
 }
 
 func (m Migrator) CreateConstraint(value interface{}, name string) error {
@@ -316,8 +397,9 @@ func (m Migrator) DropConstraint(value interface{}, name string) error {
 func (m Migrator) HasConstraint(value interface{}, name string) bool {
 	var count int64
 	return m.RunWithValue(value, func(stmt *gorm.Statement) error {
+		schema := m.CurrentDatabase()
 		return m.DB.Raw(
-			"SELECT COUNT(*) FROM USER_CONSTRAINTS WHERE TABLE_NAME = ? AND CONSTRAINT_NAME = ?", stmt.Table, name,
+			"SELECT COUNT(*) FROM ALL_CONSTRAINTS WHERE TABLE_NAME = ? AND CONSTRAINT_NAME = ? AND OWNER = ?", stmt.Table, name, schema,
 		).Row().Scan(&count)
 	}) == nil && count > 0
 }
@@ -338,11 +420,12 @@ func (m Migrator) HasIndex(value interface{}, name string) bool {
 		if idx := stmt.Schema.LookIndex(name); idx != nil {
 			name = idx.Name
 		}
-
+		schema := m.CurrentDatabase()
 		return m.DB.Raw(
-			fmt.Sprintf(`SELECT COUNT(*) FROM USER_INDEXES WHERE TABLE_NAME = ('%s') AND INDEX_NAME = ('%s')`,
+			fmt.Sprintf(`SELECT COUNT(*) FROM ALL_INDEXES WHERE TABLE_NAME = ('%s') AND INDEX_NAME = ('%s') AND OWNER = ('%s')`,
 				m.Migrator.DB.NamingStrategy.TableName(stmt.Table),
 				m.Migrator.DB.NamingStrategy.IndexName(stmt.Table, name),
+				schema,
 			),
 		).Row().Scan(&count)
 	})
