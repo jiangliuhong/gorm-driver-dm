@@ -11,7 +11,8 @@ type Namer struct {
 }
 
 func ConvertNameToFormat(x string) string {
-	name := strings.ToUpper(x)
+	//name := strings.ToUpper(x)
+	name := x
 	// 对关键字进行处理
 	if IsReservedWord(name) {
 		name = fmt.Sprintf(`"%s"`, name)

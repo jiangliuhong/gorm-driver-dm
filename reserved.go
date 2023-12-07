@@ -3,12 +3,13 @@ package dm
 import (
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/thoas/go-funk"
+	"strings"
 )
 
 var ReservedWords = hashset.New(funk.Map(ReservedWordsList, func(s string) interface{} { return s }).([]interface{})...)
 
 func IsReservedWord(v string) bool {
-	return ReservedWords.Contains(v)
+	return ReservedWords.Contains(strings.ToUpper(v))
 }
 
 var ReservedWordsList = []string{
@@ -24,5 +25,5 @@ var ReservedWordsList = []string{
 	"PARALLEL", "PARENT", "PLSQL", "PRUNE", "RAW", "RELATIVE", "ROOT_ANCESTOR", "ROWID", "SCN", "SECOND", "SELF",
 	"SERIAL", "SET", "SOLVE", "SOME", "SORT", "SPEC", "SUM", "SYNCH", "TEXT_MEASURE", "THEN", "TIME", "TIMESTAMP",
 	"TO", "UNBRANCH", "UPDATE", "USING", "VALIDATE", "VALUES", "VARCHAR2", "WHEN", "WHERE", "WITHIN", "WITH", "YEAR",
-	"ZERO", "ZONE", "COMMENT", "INDEX",
+	"ZERO", "ZONE", "COMMENT", "INDEX", "KEY", "TYPE", "VALUE", "USER", "CONTEXT", "TABLE", "DOMAIN", "OBJECT", "TRIGGER", "CLUSTER",
 }
