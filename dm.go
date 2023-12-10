@@ -50,7 +50,8 @@ func (d Dialector) Initialize(db *gorm.DB) (err error) {
 	d.DefaultStringSize = 4096
 
 	// register callbacks
-	callbacks.RegisterDefaultCallbacks(db, &callbacks.Config{})
+	c := &callbacks.Config{}
+	callbacks.RegisterDefaultCallbacks(db, c)
 
 	d.DriverName = "dm"
 
@@ -62,6 +63,15 @@ func (d Dialector) Initialize(db *gorm.DB) (err error) {
 
 	if err = db.Callback().Create().Replace("gorm:create", Create); err != nil {
 		return
+	}
+	if err = db.Callback().Query().Replace("gorm:query", Query); err != nil {
+		return err
+	}
+	if err = db.Callback().Row().Replace("gorm:row", RowQuery); err != nil {
+		return err
+	}
+	if err = db.Callback().Update().Replace("gorm:update", Update(c)); err != nil {
+		return err
 	}
 
 	for k, v := range d.ClauseBuilders() {
