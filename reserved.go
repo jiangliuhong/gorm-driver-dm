@@ -1,6 +1,7 @@
 package dm
 
 import (
+	"fmt"
 	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/thoas/go-funk"
 	"strings"
@@ -26,4 +27,15 @@ var ReservedWordsList = []string{
 	"SERIAL", "SET", "SOLVE", "SOME", "SORT", "SPEC", "SUM", "SYNCH", "TEXT_MEASURE", "THEN", "TIME", "TIMESTAMP",
 	"TO", "UNBRANCH", "UPDATE", "USING", "VALIDATE", "VALUES", "VARCHAR2", "WHEN", "WHERE", "WITHIN", "WITH", "YEAR",
 	"ZERO", "ZONE", "COMMENT", "INDEX", "KEY", "TYPE", "VALUE", "USER", "CONTEXT", "TABLE", "DOMAIN", "OBJECT", "TRIGGER", "CLUSTER",
+}
+
+func BuildReservedWord(v string) string {
+	if IsReservedWord(v) {
+		return fmt.Sprintf(`"%s"`, v)
+	}
+	return v
+}
+
+func RemoveReservedWordSymbol(v string) string {
+	return strings.ReplaceAll(v, `"`, "")
 }

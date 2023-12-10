@@ -1,7 +1,6 @@
 package dm
 
 import (
-	"fmt"
 	"gorm.io/gorm/schema"
 	"strings"
 )
@@ -14,9 +13,9 @@ func ConvertNameToFormat(x string) string {
 	//name := strings.ToUpper(x)
 	name := x
 	// 对关键字进行处理
-	if IsReservedWord(name) {
-		name = fmt.Sprintf(`"%s"`, name)
-	}
+	//if IsReservedWord(name) {
+	//	name = fmt.Sprintf(`"%s"`, name)
+	//}
 	return name
 }
 

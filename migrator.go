@@ -32,9 +32,9 @@ type ColumnType struct {
 
 func (c ColumnType) Name() string {
 	name := c.mct.Name()
-	if IsReservedWord(name) {
-		return fmt.Sprintf(`"%s"`, name)
-	}
+	//if IsReservedWord(name) {
+	//	return fmt.Sprintf(`"%s"`, name)
+	//}
 	return name
 }
 func (c ColumnType) DatabaseTypeName() string {
@@ -124,6 +124,79 @@ func (m Migrator) CreateIndex(value interface{}, name string) error {
 	})
 }
 
+func (m Migrator) AutoMigrate(values ...interface{}) error {
+	for _, value := range m.ReorderModels(values, true) {
+		tx := m.DB.Session(&gorm.Session{})
+		if !tx.Migrator().HasTable(value) {
+			if err := tx.Migrator().CreateTable(value); err != nil {
+				return err
+			}
+		} else {
+			if err := m.RunWithValue(value, func(stmt *gorm.Statement) (errr error) {
+				columnTypes, err := m.DB.Migrator().ColumnTypes(value)
+				if err != nil {
+					return err
+				}
+
+				for _, dbName := range stmt.Schema.DBNames {
+					field := stmt.Schema.FieldsByDBName[dbName]
+					var foundColumn gorm.ColumnType
+
+					for _, columnType := range columnTypes {
+						if columnType.Name() == dbName {
+							foundColumn = columnType
+							break
+						}
+					}
+
+					if foundColumn == nil {
+						// not found, add column
+						if err := tx.Migrator().AddColumn(value, dbName); err != nil {
+							return err
+						}
+					} else if err := m.DB.Migrator().MigrateColumn(value, field, foundColumn); err != nil {
+						// found, smart migrate
+						return err
+					}
+				}
+
+				for _, rel := range stmt.Schema.Relationships.Relations {
+					if !m.DB.Config.DisableForeignKeyConstraintWhenMigrating {
+						if constraint := rel.ParseConstraint(); constraint != nil &&
+							constraint.Schema == stmt.Schema && !tx.Migrator().HasConstraint(value, constraint.Name) {
+							if err := tx.Migrator().CreateConstraint(value, constraint.Name); err != nil {
+								return err
+							}
+						}
+					}
+
+					for _, chk := range stmt.Schema.ParseCheckConstraints() {
+						if !tx.Migrator().HasConstraint(value, chk.Name) {
+							if err := tx.Migrator().CreateConstraint(value, chk.Name); err != nil {
+								return err
+							}
+						}
+					}
+				}
+
+				for _, idx := range stmt.Schema.ParseIndexes() {
+					if !tx.Migrator().HasIndex(value, idx.Name) {
+						if err := tx.Migrator().CreateIndex(value, idx.Name); err != nil {
+							return err
+						}
+					}
+				}
+
+				return nil
+			}); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (m Migrator) CreateTable(values ...interface{}) error {
 	for _, value := range values {
 		m.TryQuotifyReservedWords(value)
@@ -140,7 +213,7 @@ func (m Migrator) CreateTable(values ...interface{}) error {
 			)
 
 			for _, dbName := range stmt.Schema.DBNames {
-				field := stmt.Schema.FieldsByDBName[dbName]
+				field := stmt.Schema.FieldsByDBName[RemoveReservedWordSymbol(dbName)]
 				if !field.IgnoreMigration {
 					createTableSQL += "? ?"
 					hasPrimaryKeyInDataType = hasPrimaryKeyInDataType || strings.Contains(strings.ToUpper(string(field.DataType)), "PRIMARY KEY")
