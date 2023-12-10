@@ -73,6 +73,9 @@ func (d Dialector) Initialize(db *gorm.DB) (err error) {
 	if err = db.Callback().Update().Replace("gorm:update", Update(c)); err != nil {
 		return err
 	}
+	if err = db.Callback().Delete().Replace("gorm:delete", Delete(c)); err != nil {
+		return err
+	}
 
 	for k, v := range d.ClauseBuilders() {
 		db.ClauseBuilders[k] = v
