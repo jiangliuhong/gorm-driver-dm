@@ -33,6 +33,11 @@ func Create(db *gorm.DB) {
 
 	if stmt.SQL.String() == "" {
 		values := callbacks.ConvertToCreateValues(stmt)
+		// 字段关键字处理
+		for index, item := range values.Columns {
+			item.Name = BuildReservedWord(item.Name)
+			values.Columns[index] = item
+		}
 		onConflict, hasConflict := stmt.Clauses["ON CONFLICT"].Expression.(clause.OnConflict)
 		if hasConflict {
 			stmt.AddClauseIfNotExists(clauses.Merge{
