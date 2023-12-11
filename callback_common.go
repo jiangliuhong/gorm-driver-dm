@@ -64,7 +64,7 @@ func buildQuerySQL(db *gorm.DB) {
 			clauseSelect.Columns = make([]clause.Column, 0, len(db.Statement.Schema.DBNames))
 			for _, dbName := range db.Statement.Schema.DBNames {
 				if v, ok := selectColumns[dbName]; (ok && v) || !ok {
-					clauseSelect.Columns = append(clauseSelect.Columns, clause.Column{Table: db.Statement.Table, Name: dbName})
+					clauseSelect.Columns = append(clauseSelect.Columns, newColumn(db.Statement.Table, dbName))
 				}
 			}
 		} else if db.Statement.Schema != nil && db.Statement.ReflectValue.IsValid() {
@@ -85,12 +85,7 @@ func buildQuerySQL(db *gorm.DB) {
 					clauseSelect.Columns = make([]clause.Column, len(stmt.Schema.DBNames))
 
 					for idx, dbName := range stmt.Schema.DBNames {
-						// 针对关键字进行as
-						cc := clause.Column{Table: db.Statement.Table, Name: dbName}
-						if IsReservedWord(dbName) {
-							cc.Alias = fmt.Sprintf(`"%s"`, dbName)
-						}
-						clauseSelect.Columns[idx] = cc
+						clauseSelect.Columns[idx] = newColumn(db.Statement.Table, dbName)
 					}
 				}
 			}
@@ -106,7 +101,7 @@ func buildQuerySQL(db *gorm.DB) {
 			if len(db.Statement.Selects) == 0 && len(db.Statement.Omits) == 0 && db.Statement.Schema != nil {
 				clauseSelect.Columns = make([]clause.Column, len(db.Statement.Schema.DBNames))
 				for idx, dbName := range db.Statement.Schema.DBNames {
-					clauseSelect.Columns[idx] = clause.Column{Table: db.Statement.Table, Name: dbName}
+					clauseSelect.Columns[idx] = newColumn(db.Statement.Table, dbName)
 				}
 			}
 
@@ -199,4 +194,13 @@ func buildQuerySQL(db *gorm.DB) {
 
 		db.Statement.Build(db.Statement.BuildClauses...)
 	}
+}
+
+func newColumn(table, name string) clause.Column {
+	cc := clause.Column{Table: table, Name: name}
+	if IsReservedWord(name) {
+		// 针对关键字进行as
+		cc.Alias = fmt.Sprintf(`"%s"`, name)
+	}
+	return cc
 }
