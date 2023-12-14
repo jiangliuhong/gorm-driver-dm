@@ -8,9 +8,8 @@ package dmr
 import (
 	"bytes"
 	"fmt"
-	"runtime"
-
 	"github.com/jiangliuhong/gorm-driver-dm/dmr/i18n"
+	"runtime"
 )
 
 // 驱动级错误
@@ -48,11 +47,15 @@ var (
 	ECGO_INVALID_TRAN_ISOLATION      = newDmError(6038, "error.invalidTranIsolation")
 	ECGO_COMMIT_IN_AUTOCOMMIT_MODE   = newDmError(6039, "errorCommitInAutoCommitMode")
 	ECGO_ROLLBACK_IN_AUTOCOMMIT_MODE = newDmError(6040, "errorRollbackInAutoCommitMode")
+	ECGO_UNBINDED_PARAMETER          = newDmError(6054, "error.unbindedParameter")
+	ECGO_PARAM_COUNT_LIMIT           = newDmError(6056, "error.ParamCountLimit")
 	ECGO_INVALID_LENGTH_OR_OFFSET    = newDmError(6057, "error.invalidLenOrOffset")
+	ECGO_CONNECTION_CLOSED           = newDmError(6060, "error.error.connectionClosedOrNotBuild")
 	ECGO_INTERVAL_OVERFLOW           = newDmError(6066, "error.intervalValueOverflow")
-	ECGO_INVALID_BFILE_STR           = newDmError(6067, "error.invalidBFile")
+	ECGO_STRING_CUT                  = newDmError(6067, "error.stringCut")
 	ECGO_INVALID_HEX                 = newDmError(6068, "error.invalidHex")
 	ECGO_INVALID_CIPHER              = newDmError(6069, "error.invalidCipher")
+	ECGO_INVALID_BFILE_STR           = newDmError(6070, "error.invalidBFile")
 	ECGO_OSAUTH_ERROR                = newDmError(6073, "error.osauthError")
 	ECGO_ERROR_SERVER_VERSION        = newDmError(6074, "error.serverVersion")
 	ECGO_USERNAME_TOO_LONG           = newDmError(6075, "error.usernameTooLong")
@@ -120,8 +123,12 @@ func (dmError *DmError) FormatStack() string {
 	return buffer.String()
 }
 
+func (dmError *DmError) getErrText() string {
+	return i18n.Get(dmError.ErrText, Locale)
+}
+
 func (dmError *DmError) Error() string {
-	return fmt.Sprintf("Error %d: %s", dmError.ErrCode, i18n.Get(dmError.ErrText, Locale)) + dmError.detail + "\n" + "stack info:\n" + dmError.FormatStack()
+	return fmt.Sprintf("Error %d: %s", dmError.ErrCode, dmError.getErrText()) + dmError.detail + "\n" + "stack info:\n" + dmError.FormatStack()
 }
 
 // 扩充ErrText

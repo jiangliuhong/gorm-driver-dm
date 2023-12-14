@@ -6,11 +6,10 @@ package dmr
 
 import (
 	"database/sql/driver"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 	"math"
 	"strconv"
 	"strings"
-
-	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 )
 
 const (
@@ -53,17 +52,17 @@ func NewDmIntervalYMByString(str string) (ym *DmIntervalYM, err error) {
 func newDmIntervalYMByBytes(bytes []byte) *DmIntervalYM {
 	ym := newDmIntervalYM()
 
-	ym.scaleForSvr = int(Dm_build_1220.Dm_build_1322(bytes, 8))
+	ym.scaleForSvr = int(Dm_build_1.Dm_build_103(bytes, 8))
 	ym.leadScale = (ym.scaleForSvr >> 4) & 0x0000000F
 	ym._type = bytes[9]
 	switch ym._type {
 	case QUA_Y:
-		ym.years = int(Dm_build_1220.Dm_build_1322(bytes, 0))
+		ym.years = int(Dm_build_1.Dm_build_103(bytes, 0))
 	case QUA_YM:
-		ym.years = int(Dm_build_1220.Dm_build_1322(bytes, 0))
-		ym.months = int(Dm_build_1220.Dm_build_1322(bytes, 4))
+		ym.years = int(Dm_build_1.Dm_build_103(bytes, 0))
+		ym.months = int(Dm_build_1.Dm_build_103(bytes, 4))
 	case QUA_MO:
-		ym.months = int(Dm_build_1220.Dm_build_1322(bytes, 4))
+		ym.months = int(Dm_build_1.Dm_build_103(bytes, 4))
 	}
 	return ym
 }
@@ -436,9 +435,9 @@ func (ym *DmIntervalYM) encode(scale int) ([]byte, error) {
 	}
 
 	bytes := make([]byte, 12)
-	Dm_build_1220.Dm_build_1236(bytes, 0, int32(year))
-	Dm_build_1220.Dm_build_1236(bytes, 4, int32(month))
-	Dm_build_1220.Dm_build_1236(bytes, 8, int32(scale))
+	Dm_build_1.Dm_build_17(bytes, 0, int32(year))
+	Dm_build_1.Dm_build_17(bytes, 4, int32(month))
+	Dm_build_1.Dm_build_17(bytes, 8, int32(scale))
 	return bytes, nil
 }
 
@@ -487,4 +486,8 @@ func (ym *DmIntervalYM) checkValid() error {
 		return ECGO_IS_NULL.throw()
 	}
 	return nil
+}
+
+func (d *DmIntervalYM) GormDataType() string {
+	return "INTERVAL YEAR TO MONTH"
 }

@@ -7,11 +7,10 @@ package dmr
 
 import (
 	"bytes"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 	"math/rand"
 	"sync"
 	"time"
-
-	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 )
 
 /**

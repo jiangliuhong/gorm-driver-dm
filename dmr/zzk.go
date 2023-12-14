@@ -6,12 +6,10 @@ package dmr
 
 import (
 	"bytes"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/parser"
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 	"strconv"
 	"strings"
-
-	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
-
-	"github.com/jiangliuhong/gorm-driver-dm/dmr/parser"
 )
 
 func (dc *DmConnection) lex(sql string) ([]*parser.LVal, error) {
@@ -252,7 +250,7 @@ func (dc *DmConnection) execOpt(sql string, optParamList []OptParameter, serverE
 					nsql.WriteString("'" + util.StringUtil.ProcessSingleQuoteOfName(lval.Value) + "'")
 				} else {
 					nsql.WriteString("?")
-					optParamList = append(optParamList, newOptParameter(Dm_build_1220.Dm_build_1433(lval.Value, serverEncoding, dc), VARCHAR, VARCHAR_PREC))
+					optParamList = append(optParamList, newOptParameter(Dm_build_1.Dm_build_217(lval.Value, serverEncoding, dc), VARCHAR, VARCHAR_PREC))
 				}
 			}
 		case parser.HEX_INT:

@@ -7,6 +7,7 @@ import (
 	"github.com/jiangliuhong/gorm-driver-dm/dmr"
 	dmSchema "github.com/jiangliuhong/gorm-driver-dm/schema"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"testing"
 	"time"
 )
@@ -16,9 +17,10 @@ var db *gorm.DB
 func init() {
 	var err error
 	//dsn := "dm://sysdba:SYSDBA@local.Leefs.ren:5236?autoCommit=true"
-	dsn := "dm://SYSDBA:SYSDBA@47.97.125.198:5236?schema=IACTEST&autoCommit=true"
+	dsn := "dm://SYSDBA:SYSDBA@114.55.86.238:5236?schema=iactest&autoCommit=true"
 	db, err = gorm.Open(Open(dsn), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
+		Logger:                                   logger.Default.LogMode(logger.Info),
 	})
 
 	if err != nil {
@@ -35,6 +37,7 @@ type User struct {
 	Key      string `gorm:"index:key,unique"`
 	Name     string `gorm:"index:name"`
 	Age      int
+	Des      string        `gorm:"type:text"`
 	Content  dmSchema.Clob `gorm:"size:1024000"`
 	Birthday time.Time
 	From     string `gorm:"size:16"`
@@ -56,6 +59,12 @@ type PerPel struct {
 
 func TestAutoMirgte(t *testing.T) {
 	Table().AutoMigrate(&User{})
+}
+
+func TestQueryIn(t *testing.T) {
+	l := make([]User, 0)
+	Table(&User{}).GetAll(&l)
+	t.Log(len(l))
 }
 
 func TestAutoCreat(t *testing.T) {
@@ -220,18 +229,16 @@ type TestConfig struct {
 	Id      uint   `gorm:"primarykey"`
 	Name    string `gorm:"not null;uniqueIndex:idx_cfg_name"`
 	Version int64  `gorm:"not null;default:0"`
-	Value   JSON   `gorm:"type:clob;"`
+	Value   string
 }
 
 func (TestConfig) TableName() string {
 	return "t_config"
 }
 
-func TestQuery2(t *testing.T) {
-	rs := &TestConfig{}
-	tx := db.Where("name = ?", "task-manager-lock").Find(&rs)
-	if tx.Error != nil {
-		t.Fatal(tx.Error)
-	}
-	t.Log(rs)
+func TestQueryValue(t *testing.T) {
+	Table().AutoMigrate(&TestConfig{})
+	rts := make([]TestConfig, 0)
+	db.Model(&TestConfig{}).Find(&rts)
+	t.Log(rts)
 }

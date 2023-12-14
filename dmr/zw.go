@@ -6,11 +6,10 @@
 package dmr
 
 import (
+	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 	"math/rand"
 	"strconv"
 	"time"
-
-	"github.com/jiangliuhong/gorm-driver-dm/dmr/util"
 )
 
 var rwMap = make(map[string]*rwCounter)

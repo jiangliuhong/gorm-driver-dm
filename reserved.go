@@ -27,7 +27,7 @@ var ReservedWordsList = []string{
 	"SERIAL", "SET", "SOLVE", "SOME", "SORT", "SPEC", "SUM", "SYNCH", "TEXT_MEASURE", "THEN", "TIME", "TIMESTAMP",
 	"TO", "UNBRANCH", "UPDATE", "USING", "VALIDATE", "VALUES", "VARCHAR2", "WHEN", "WHERE", "WITHIN", "WITH", "YEAR",
 	"ZERO", "ZONE", "COMMENT", "INDEX", "KEY", "TYPE", "VALUE", "USER", "CONTEXT", "TABLE", "DOMAIN", "OBJECT", "TRIGGER",
-	"CLUSTER", "RESULT",
+	"CLUSTER", "RESULT", "SCOPE",
 }
 
 func BuildReservedWord(v string) string {
